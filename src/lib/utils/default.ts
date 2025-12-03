@@ -1,0 +1,1 @@
+export const exampleMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
