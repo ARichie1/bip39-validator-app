@@ -72,47 +72,43 @@
                     ? 'Valid mnemonic'
                     : 'Invalid mnemonic'
             }else{
-                if (result.invalid) {
-                    if (result.invalid.length > 0) {
-                        return "some words are not valid"
-                    }
-                }
-                return "Valid words"
+                return (
+                    result?.invalidWords && result?.validWords
+                        ? (result.invalidWords.length > 0
+                            ? (result.invalidWords.length > 1
+                                ? "Invalid Words"
+                                : "Invalid Word")
+                            : (result?.validWords.length > 1
+                                ? "Valid Words"
+                                : "Valid Word")
+                            )
+                    : ""
+                )
             }   
         }
     })
 
-    // $: statusText = result
-    //     ? result.valid
-    //     ? 'Valid mnemonic'
-    //     : 'Invalid mnemonic'
-    //     : '';
-
-
-    // $: reasonText = result?.reason
-    //     ? result.reason === 'invalid_length'
-    //     ? 'Invalid number of words. BIP-39 supports 12, 15, 18, 21 or 24 words.'
-    //     : result.reason === 'unknown_words'
-    //     ? 'One or more words are not in the BIP-39 wordlist.'
-    //     : result.reason === 'invalid_checksum'
-    //     ? 'Words are valid but the checksum is wrong.'
-    //     : ''
-    //     : '';
     let reasonText = $derived(() => {
         if (result) {
             if (showMnemonicField) {
-                return result?.reason
-                    ? result.reason === 'invalid_length'
-                    ? 'Invalid number of words. BIP-39 supports 12, 15, 18, 21 or 24 words.'
-                    : result.reason === 'unknown_words'
-                    ? 'One or more words are not in the BIP-39 wordlist.'
-                    : result.reason === 'invalid_checksum'
-                    ? 'Words are valid but the checksum is wrong.'
-                    : ''
-                    : '';
+                return (
+                    result?.error === "invalid_length"
+                    ? "Invalid number of words. BIP-39 supports 12, 15, 18, 21 or 24 words."
+                    : result?.error === "unknown_words"
+                    ? "One or more words are not in the BIP-39 wordlist."
+                    : result?.error === "invalid_checksum"
+                    ? "Words are valid but the checksum is wrong."
+                    : ""
+                )
             }
             else{
-
+                return (
+                    result?.error === "invalid_length"
+                    ? "You need to add a word or words."
+                    : result?.error === "invalid_words"
+                    ? "Some words are not valid."
+                    : ""
+                )
             }
         }
     })
@@ -188,7 +184,7 @@
                     {#if result.valid}
                         ✅ {statusText()}
                     {:else}
-                        npm {statusText()}
+                        ✖ {statusText()}
                     {/if}
                 </p>
 

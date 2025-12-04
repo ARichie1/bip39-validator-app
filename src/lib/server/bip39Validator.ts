@@ -1,8 +1,7 @@
-import { isValidMnemonic, 
-    validateWords, 
-    type MnemonicValidationResult } from 'bip39-validator';
+import { isValidMnemonic, validateWords, 
+    type ValidationResult } from 'bip39-validator';
 
-export type ValidateResponse = MnemonicValidationResult & {
+export type ValidateResponse = ValidationResult & {
     words: string[];
 };
 

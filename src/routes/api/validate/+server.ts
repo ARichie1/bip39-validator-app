@@ -28,8 +28,7 @@ export const POST: RequestHandler = async ({ request }) => {
                 )
             }
             result = validateWordsServer(words, language);
-            console.log(result);
-            
+            console.log(result);   
         }
         
 

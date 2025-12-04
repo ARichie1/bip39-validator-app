@@ -1,12 +1,16 @@
-
-export type Reason = 'invalid_length' | 'unknown_words' | 'invalid_checksum' | undefined;
+export type ValidationError =
+  | "invalid_words"
+  | "invalid_length"
+  | "unknown_words"
+  | "invalid_checksum"
+  | ""
 
 export type ApiResult = {
-    valid?: boolean | string[];
-    invalid?: string[];
-    invalidWords?: string[];
+    valid?: boolean;
     language?: string;
-    reason?: Reason;
+    error?: ValidationError;
+    validWords?: string[];
+    invalidWords?: string[];
     suggestions?: Record<string, string[]>;
     words?: string[];
 };
