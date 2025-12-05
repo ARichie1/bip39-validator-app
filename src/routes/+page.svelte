@@ -1,17 +1,38 @@
 <script lang="ts">
-    import type { ApiResult } from '$lib/utils/types';
+	import { tick } from 'svelte';
+   import type { ApiResult } from '$lib/utils/types';
     import { exampleMnemonic } from '$lib/utils/default';
-    
+
     let showMnemonicField = $state(false)
     let words = $state('');
     let mnemonic = $state('');
     let language = $state('');
-    let isCheckingMnemonic = $state(false)
     let loading = $state(false);
     let error: string | null = $state(null);
     let result: ApiResult | null = $state(null);
-
     let supportedLanguages = []
+    
+    let resultSection: HTMLElement | null = $state(null);
+    const scrollToResult = async () => {
+        await tick();
+        resultSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }    
+
+    let autoDetectedLanguage = $state<string | undefined>(undefined);
+
+    // Auto-detect language whenever words/mnemonics change
+    // $effect(() => {
+    //     autoDetectedLanguage = detectLanguage(showMnemonicField ? mnemonic :words);
+        
+    //     if (mnemonic === "" && words === "") {
+    //         language = ""
+    //     }
+
+    //     // Only apply auto-detected language if user hasn’t manually selected one
+    //     if (!language) {
+    //         language = autoDetectedLanguage ?? '';
+    //     }
+    // });
 
     const useExample = () => {
         mnemonic = exampleMnemonic;
@@ -19,6 +40,13 @@
         result = null;
         error = null;
     }    
+    const clearInput = () => {
+        mnemonic = "";
+        words = ""
+        result = null;
+        error = null;
+        language = ""
+    } 
 
     const validate = async () => {
         error = null;
@@ -57,6 +85,10 @@
 
             const data = (await res.json()) as ApiResult;
             result = data
+
+           // Scroll to result after it’s rendered
+            await scrollToResult();
+
         } catch (e) {
             console.error(e);
             error = 'Network or server error. Please try again.';
@@ -95,7 +127,7 @@
                     result?.error === "invalid_length"
                     ? "Invalid number of words. BIP-39 supports 12, 15, 18, 21 or 24 words."
                     : result?.error === "unknown_words"
-                    ? "One or more words are not in the BIP-39 wordlist."
+                    ? `One or more words are not in the ${language} BIP-39 wordlist. Try changing the language.`
                     : result?.error === "invalid_checksum"
                     ? "Words are valid but the checksum is wrong."
                     : ""
@@ -106,7 +138,7 @@
                     result?.error === "invalid_length"
                     ? "You need to add a word or words."
                     : result?.error === "invalid_words"
-                    ? "Some words are not valid."
+                    ? `One or more words are not in the ${language} BIP-39 wordlist. Try changing the language.`
                     : ""
                 )
             }
@@ -129,29 +161,38 @@
                 <select id="language" bind:value={language}>
                     <option value="">Auto detect</option>
                     <option value="english">English</option>
-                    <option value="spanish">Spanish</option>
                     <option value="french">French</option>
                     <option value="italian">Italian</option>
+                    <option value="japanese">Japanese</option>
                     <option value="korean">Korean</option>
+                    <option value="spanish">Spanish</option>
                     <option value="chinese_simplified">Chinese (Simplified)</option>
                     <option value="chinese_traditional">Chinese (Traditional)</option>
                 </select>
             </div>
             <ul>
-                <li><button class="btn"
+                <li><button class="btn words_btn"
+                    class:active={!showMnemonicField}
                     onclick={() => showMnemonicField = false}>Words</button></li>
-                <li><button class="btn"
+                <li><button class="btn mnemonics_btn"
+                    class:active={showMnemonicField}
                     onclick={() => showMnemonicField = true}>Mnemonic</button></li>
             </ul>
         </div>
         <div class="card-body">
             {#if !showMnemonicField}
-                <label for="words">Check Word or Words</label>
+                <div class="input-header">
+                    <label for="words">Check Word or Words</label>
+                    <button type="button" onclick={useExample}>Use example</button>
+                </div>
                 <textarea id="words" bind:value={words}
                     rows="5" placeholder="Paste your word or words here..."
                 ></textarea>
             {:else}
-                <label for="mnemonic"> Mnemonic phrase</label>
+                <div class="input-header">
+                    <label for="mnemonic"> Mnemonic phrase</label>
+                    <button type="button" onclick={useExample}>Use example</button>
+                </div>
                 <textarea id="mnemonic" bind:value={mnemonic}
                     rows="5" placeholder="Paste your mnemonic here..."
                 ></textarea>
@@ -163,9 +204,10 @@
 
             <div class="controls">
                 <div class="buttons section">
-                    <button type="button" onclick={useExample}>Use example</button>
-                    <button type="button" class="primary" 
-                        onclick={validate} disabled={loading}>
+                    <button type="button" onclick={clearInput}>Reset</button>
+                    <button type="button" class="primary"
+                        onclick={validate} 
+                        disabled={loading}>
                         {#if loading}
                             Validating...
                         {:else}
@@ -178,49 +220,57 @@
 
 
         {#if result}
-            <div class="card result">
-                <h3>Result</h3>
-                <p class:valid={result.valid} class:invalid={!result.valid}>
-                    {#if result.valid}
-                        ✅ {statusText()}
-                    {:else}
-                        ✖ {statusText()}
-                    {/if}
-                </p>
-
-                {#if reasonText}
-                    <p class="reason">{reasonText()}</p>
-                {/if}
-
-
-                <h4 class="language">Language used: <strong>{result.language}</strong></h4>
-
-
-                <h4>Words</h4>
-                <div class="words">
-                    {#each result.words as w}
-                        <span class="word"
-                            class:word-invalid={result.invalidWords && result.invalidWords.includes(w)}>
-                            {w}
-                        </span>
-                    {/each}
+            <div class="card-result"
+                bind:this={resultSection}>
+                <div class="result-header">
+                    <h3>Result</h3>
+                    <p class="language">Language Used: <strong>{result.language}</strong></p>
                 </div>
+                
 
-                {#if result.invalidWords && result.invalidWords.length}
-                    <h3>Invalid words</h3>
-                    <ul>
-                        {#each result.invalidWords as w}
-                            <li>
-                                <code>{w}</code>
-                                {#if result.suggestions && result.suggestions[w]?.length}
-                                    <span class="suggestions">
-                                        – suggestions:
-                                        {result.suggestions[w].join(', ')}
-                                    </span>
-                                {/if}
-                            </li>
+                <div class="error-alert">
+                    <p class="alert" class:valid={result.valid} class:invalid={!result.valid}>
+                        {#if result.valid}
+                            ✅ {statusText()}
+                        {:else}
+                            ✖ {statusText()}
+                        {/if}
+                    </p>
+
+                    {#if reasonText}
+                        <p class="reason">{reasonText()}</p>
+                    {/if}
+                </div>
+                
+                <div class="entered-words">
+                    <h4>Words</h4>
+                    <div class="words">
+                        {#each result.words as w}
+                            <span class="word"
+                                class:word-invalid={result.invalidWords && result.invalidWords.includes(w)}>
+                                {w}
+                            </span>
                         {/each}
-                    </ul>
+                    </div>
+                </div>
+                
+                {#if result.invalidWords && result.invalidWords.length}
+                    <div class="invalid-words">
+                        <h4>Invalid words</h4>
+                        <ul>
+                            {#each result.invalidWords as w}
+                                <li>
+                                    <code>{w}</code>
+                                    {#if result.suggestions && result.suggestions[w]?.length}
+                                        <span class="suggestions">
+                                            – suggestions:
+                                            {result.suggestions[w].join(', ')}
+                                        </span>
+                                    {/if}
+                                </li>
+                            {/each}
+                        </ul>
+                    </div>
                 {/if}
             </div>
         {/if}

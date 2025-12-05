@@ -5,25 +5,27 @@
     box-sizing: border-box;
 }
 
-ul, li {
+ul, li, p {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
 a {text-decoration: none;}
-button, select { cursor: pointer;}
+button, select { cursor: pointer; border-radius: 4px;}
 
+.active{
+    background: #fff;
+    font-weight: bold;
+}
 .btn {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid red;
     cursor: pointer;
 }
 .btn:hover {
-    cursor: pointer;
-    background: #2563eb;
+    box-shadow: 0px 0px 0px 0.1px black inset;
 }
 
 .page {
@@ -37,13 +39,8 @@ button, select { cursor: pointer;}
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.hero {
-    text-align: center;
-}
-
-.hero h1 {
-    margin-bottom: 0.25rem;
-}
+.hero {text-align: center;}
+.hero h1 {margin-bottom: 0.25rem;}
 
 .card {
     background: #fff;
@@ -67,7 +64,7 @@ button, select { cursor: pointer;}
     align-items: center;
 }
 .card-header .field select{
-    height: 40px; width: 50%;
+    height: 40px; width: 100%;
 }
 .card-header ul {
     width: 100%; height: 100%;
@@ -84,19 +81,38 @@ button, select { cursor: pointer;}
 }
 .card-header ul li button{
     width: 100%; height: 100%;
-    
+    border-bottom: none;
+}
+.card-header ul li .words_btn{
+    border-radius: 0;
+    border-top-left-radius: 4px;
+}
+.card-header ul li .mnemonics_btn{
+    border-radius: 0;
+    border-top-right-radius: 4px;
 }
 
 /* Card Body */
 .card-body {
-    border: 1px solid green;
     padding: 10px;
+    border: 1px solid gray;
 }
 
-label {
+.input-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.input-header label {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
+}
+.input-header button {
+    height: 30px;
+    width: 100px;
 }
 
 textarea {
@@ -122,14 +138,12 @@ textarea:focus {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
-    border: 1px solid green;
 }
 .card-body .controls .section{
     width: 100%; height: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid red;
 }
 
 .card-body .controls .buttons button{
@@ -137,23 +151,34 @@ textarea:focus {
 }
 
 /* Card Results */
-.result p.invalid {
+.card-result {
+    display: flex;
+    justify-content: center;
+    align-items: space-evenly;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+.card-result .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+.card-result .language {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+.card-result .language strong {
+    text-transform: capitalize;
+}
+.card-result .error-alert {
+    margin-top: 10px;
+}
+.card-result p.invalid {
     color: #b91c1c;
     font-weight: 600;
 }
-
-.reason {
-    margin-top: 0.25rem;
-    font-size: 0.9rem;
-    color: #4b5563;
-}
-
-.language {
-    margin-top: 0.75rem;
-    font-size: 0.9rem;
-    color: #4b5563;
-}
-
 .words {
     display: flex;
     flex-wrap: wrap;
@@ -167,12 +192,16 @@ textarea:focus {
     background: #e5e7eb;
     font-size: 0.8rem;
 }
+.card-result .reason {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
 
 .word-invalid {
     background: #fee2e2;
     color: #b91c1c;
 }
-
 
 .suggestions {
     font-size: 0.85rem;

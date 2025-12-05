@@ -6,6 +6,8 @@ export const POST: RequestHandler = async ({ request }) => {
     try {
         const {words, mnemonic, checkMnemonic, language } = await request.json();
 
+        console.log(language);
+        
         if (checkMnemonic) {
             if (typeof mnemonic !== 'string' || !mnemonic.trim()) {
                 return new Response(
@@ -17,8 +19,6 @@ export const POST: RequestHandler = async ({ request }) => {
             }
             result = validateMnemonicServer(mnemonic, language);
         }else{
-            console.log(words);
-            
             if (typeof words !== 'object') {
                 return new Response(
                     JSON.stringify({ error: 'Enter a Word or Words.' }), { 
